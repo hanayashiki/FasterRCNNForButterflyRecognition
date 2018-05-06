@@ -10,8 +10,10 @@ def get_data(input_path):
 	class_mapping = {}
 
 	visualise = True
+
+	file_count = 0
 	
-	with open(input_path,'r') as f:
+	with open(input_path,'r',encoding='utf-8') as f:
 
 		print('Parsing annotation files')
 
@@ -34,6 +36,8 @@ def get_data(input_path):
 				all_imgs[filename] = {}
 				
 				img = cv2.imread(filename)
+				file_count += 1
+				print("reading: " + str(file_count))
 				(rows,cols) = img.shape[:2]
 				all_imgs[filename]['filepath'] = filename
 				all_imgs[filename]['width'] = cols

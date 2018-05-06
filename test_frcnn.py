@@ -227,7 +227,7 @@ for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 			(x1, y1, x2, y2) = new_boxes[jk,:]
 
 			(real_x1, real_y1, real_x2, real_y2) = get_real_coordinates(ratio, x1, y1, x2, y2)
-
+			print((real_x1, real_y1, real_x2, real_y2))
 			cv2.rectangle(img,(real_x1, real_y1), (real_x2, real_y2), (int(class_to_color[key][0]), int(class_to_color[key][1]), int(class_to_color[key][2])),2)
 
 			textLabel = '{}: {}'.format(key,int(100*new_probs[jk]))
@@ -241,6 +241,7 @@ for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 			cv2.putText(img, textLabel, textOrg, cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 0), 1)
 
 	print('Elapsed time = {}'.format(time.time() - st))
+
 	print(all_dets)
 	cv2.imshow('img', img)
 	cv2.waitKey(0)
