@@ -3,6 +3,8 @@ import butterfly_data_generator.config as config
 import os
 from PIL import Image
 
+"`filepath,x1,y1,x2,y2,class_name`"
+
 if __name__ == '__main__':
     data_list_wild = open(config.SOURCE_DATA_LIST, 'r', encoding='utf-8')
     data_list_mode = open(config.SOURCE_DATA_LIST_MODE, 'r', encoding='utf-8')
@@ -33,7 +35,7 @@ if __name__ == '__main__':
         ratio = 600 / min(width, height)
         new_height, new_width = int(ratio * height), int(ratio * width)
         xmin, xmax, ymin, ymax = int(xmin * ratio), int(xmax * ratio), int(ymin * ratio), int(ymax * ratio)
-        data_list_compressed.write(','.join([img_path, str(xmin), str(xmax), str(ymin), str(ymax), class_name]) + '\n')
+        data_list_compressed.write(','.join([img_path, str(xmin), str(ymin), str(xmax), str(ymax), class_name]) + '\n')
 
         if os.path.exists(img_path):
             print("Exist: " + img_path)
