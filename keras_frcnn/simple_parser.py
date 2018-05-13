@@ -77,9 +77,9 @@ def get_data(input_path):
         test_count = ceil(0.133*class_data_count)
         for i in range(class_data_count):
             if i < test_count:
-                all_imgs[data_list[i]['filepath']]['imageset'] = 'trainval'
-            else:
                 all_imgs[data_list[i]['filepath']]['imageset'] = 'test'
+            else:
+                all_imgs[data_list[i]['filepath']]['imageset'] = 'trainval'
         print("%s: %d for training, %d for testing." % (class_name, class_data_count - test_count, test_count))
 
 
