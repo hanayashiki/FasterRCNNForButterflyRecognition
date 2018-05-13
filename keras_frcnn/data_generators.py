@@ -309,6 +309,7 @@ def get_anchor_gt(all_img_data, class_count, C, img_length_calc_function, backen
 				try:
 					y_rpn_cls, y_rpn_regr = calc_rpn(C, img_data_aug, width, height, resized_width, resized_height, img_length_calc_function)
 				except:
+					print("Something happend")
 					continue
 
 				# Zero-center by mean pixel, and preprocess image

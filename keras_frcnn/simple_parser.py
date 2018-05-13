@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import random
 from math import ceil
 
 def get_data(input_path):
@@ -15,6 +16,8 @@ def get_data(input_path):
     visualise = True
 
     file_count = 0
+
+    random.seed(0)
 
     with open(input_path, 'r', encoding='utf-8') as f:
 
@@ -73,6 +76,7 @@ def get_data(input_path):
     print(classes_list)
     for class_name in classes_list:
         data_list = classes_list[class_name]
+        random.shuffle(data_list)
         class_data_count = len(data_list)
         test_count = ceil(0.133*class_data_count)
         for i in range(class_data_count):

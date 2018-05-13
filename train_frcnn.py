@@ -135,13 +135,20 @@ model_classifier = Model([img_input, roi_input], classifier)
 # this is a model that holds both the RPN and the classifier, used to load/save weights for the models
 model_all = Model([img_input, roi_input], rpn[:2] + classifier)
 
-try:
-	print('loading weights from {}'.format(C.base_net_weights))
-	model_rpn.load_weights(C.base_net_weights, by_name=True)
-	model_classifier.load_weights(C.base_net_weights, by_name=True)
-except:
-	print('Could not load pretrained model weights. Weights can be found in the keras application folder \
-		https://github.com/fchollet/keras/tree/master/keras/applications')
+import os
+if os.path.exists(C.model_path):
+	model_rpn.load_weights("model_frcnn.hdf5", by_name=True)
+	model_classifier.load_weights("model_frcnn.hdf5", by_name=True)
+else:
+	try:
+		print('loading weights from {}'.format(C.base_net_weights))
+		model_rpn.load_weights(C.base_net_weights, by_name=True)
+		model_classifier.load_weights(C.base_net_weights, by_name=True)
+	except:
+		print('Could not load pretrained model weights. Weights can be found in the keras application folder \
+			https://github.com/fchollet/keras/tree/master/keras/applications')
+	print('loading weights from {}'.format("model_frcnn.hdf5"))
+
 
 optimizer = Adam(lr=1e-5)
 optimizer_classifier = Adam(lr=1e-5)
@@ -277,7 +284,6 @@ for epoch_num in range(num_epochs):
 				break
 
 		except Exception as e:
-			print('Exception: {}'.format(e))
-			continue
+			raise e
 
 print('Training complete, exiting.')
