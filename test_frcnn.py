@@ -49,6 +49,27 @@ C.rot_90 = False
 
 img_path = options.test_path
 
+def get_filename_to_groundtruth(file_addr):
+    f = open(file_addr, 'r', encoding='utf-8')
+    dict = {}
+    for line in f:
+        (file_path, _, _, _, _,  class_name) = line.strip().split(',')
+        file_name = file_path.split('/')[-1]
+        if file_name in dict:
+            assert dict[file_name] == class_name
+        dict[file_name] = class_name
+    return dict
+
+def get_test_or_train(source_addr):
+    import json
+    return json.loads(open(source_addr, "r+", encoding="utf-8").read())
+
+def judge_correctness(all_dets, groundtruth):
+    if len(all_dets) > 0:
+        sorted(all_dets, key=lambda x : x[1])
+        return all_dets[0][0] == groundtruth
+    else:
+        return False
 
 def format_img_size(img, C):
     """ formats the image size based on config """
@@ -154,12 +175,28 @@ bbox_threshold = 0.8
 
 visualise = True
 
-for idx, img_name in enumerate(sorted(os.listdir(img_path))):
-    if img_name.startswith("A"):
-        continue
+import random
+random.seed(0)
+img_list = os.listdir(img_path)
+random.shuffle(img_list)
+
+fname_class_map = get_filename_to_groundtruth("source/data_list_compressed_linux.txt")
+fname_train_test_map = get_test_or_train("source/test_train_cut.json")
+
+total_judged = 0
+cate_correct = 0
+bad_cases = []
+
+for idx, img_name in enumerate(img_list):
     if not img_name.lower().endswith(('.bmp', '.jpeg', '.jpg', '.png', '.tif', '.tiff')):
         continue
     print(img_name)
+    cate_groundtruth = fname_class_map[img_name]
+    print(cate_groundtruth)
+    train_or_test = fname_train_test_map[img_name]
+
+    if train_or_test == "trainval":
+        continue
     st = time.time()
     filepath = os.path.join(img_path, img_name)
 
@@ -258,6 +295,16 @@ for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 
     print('Elapsed time = {}'.format(time.time() - st))
     print(all_dets)
-    cv2.imshow('img', img)
+    total_judged += 1
+    if judge_correctness(all_dets, cate_groundtruth):
+        cate_correct += 1
+    else:
+        bad_cases.append(img_name)
+    # cv2.imshow('img', img)
     cv2.waitKey(0)
+    print("total judged: %d, correct on category: %d" % (total_judged, cate_correct))
 # cv2.imwrite('./results_imgs/{}.png'.format(idx),img)
+
+print("total judged: %d, correct on category: %d" % (total_judged, cate_correct))
+
+

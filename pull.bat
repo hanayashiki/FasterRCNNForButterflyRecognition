@@ -1,1 +1,1 @@
-pscp root@39.106.56.174:/root/FasterRCNNforButterflyRecognition/%1 %2
+pscp root@39.106.13.73:/root/FasterRCNNforButterflyRecognition/%1 %2

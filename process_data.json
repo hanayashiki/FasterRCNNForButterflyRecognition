@@ -1,0 +1,5 @@
+{
+  "epoch": 1,
+  "best_loss": 1.38,
+  "weight_addr": "model_frcnn.hdf5"
+}

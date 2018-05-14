@@ -1,7 +1,11 @@
 import cv2
 import numpy as np
 import random
+import json
 from math import ceil
+
+test_train_cut_output = open("source/test_train_cut.json", "w", encoding="utf-8")
+test_train_cut = {}
 
 def get_data(input_path):
     found_bg = False
@@ -82,9 +86,15 @@ def get_data(input_path):
         for i in range(class_data_count):
             if i < test_count:
                 all_imgs[data_list[i]['filepath']]['imageset'] = 'test'
+                test_train_cut[data_list[i]['filepath'].split('\\')[-1]] = 'test'
             else:
                 all_imgs[data_list[i]['filepath']]['imageset'] = 'trainval'
+                test_train_cut[data_list[i]['filepath'].split('\\')[-1]] = 'trainval'
         print("%s: %d for training, %d for testing." % (class_name, class_data_count - test_count, test_count))
 
 
     return all_data, classes_count, class_mapping
+
+if __name__ == '__main__':
+    get_data("./source/data_list_compressed.txt")
+    test_train_cut_output.write(json.dumps(test_train_cut, ensure_ascii=False, indent=2))

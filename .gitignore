@@ -93,3 +93,5 @@ ENV/
 *.hdf5
 
 .idea/
+
+*.logs

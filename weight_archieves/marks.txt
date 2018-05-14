@@ -1,0 +1,13 @@
+model-frcnn-1.hdf5
+训练集有一些问题，没有加入增强测试集
+    total judged: 199, correct on category: 192
+
+    Mean number of bounding boxes from RPN overlapping ground truth boxes: 10.207
+    Classifier accuracy for bounding boxes from RPN: 0.987
+    Loss RPN classifier: 0.013010522047601888
+    Loss RPN regression: 0.004170798262154222
+    Loss Detector classifier: 0.04221483461819339
+    Loss Detector regression: 0.009444241437886376
+    Elapsed time: 827.6571428775787
+    Total loss decreased from 0.07107232488975948 to 0.06884039636583587, saving weights
+    Epoch 64/200000
