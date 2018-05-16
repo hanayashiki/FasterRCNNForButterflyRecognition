@@ -6,6 +6,9 @@ BASE_WILD_IMAGES_COMPRESSED = r"E:\butterfly-recognition\training-set-wild\train
 SOURCE_DATA_LIST = r"source\data_list.txt"
 SOURCE_DATA_LIST_MODE = r"source\data_list_mode.txt"
 SOURCE_DATA_LIST_COMPRESSED = r"source\data_list_compressed.txt"
+AUGMENTED_DATA_LIST = r"source\data_list_augmented.txt"
+MIXED_DATA_LIST = r"source\data_list_mixed.txt"
+LINUX_MIXED_DATA_LIST = r"source\data_list_mixed_linux.txt"
 LINUX_SOURCE_DATA_LIST_COMPRESSED = r"source\data_list_compressed_linux.txt"
 
 LINUX_BASE_WILD_IMAGES_COMPRESSED = r"/root/training-set-wild"

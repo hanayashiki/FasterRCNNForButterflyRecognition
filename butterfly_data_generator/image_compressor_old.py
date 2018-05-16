@@ -3,7 +3,7 @@ import butterfly_data_generator.config as config
 import os
 from PIL import Image
 
-"`filepath,x1,y1,x2,y2,class_name`"
+"`filepath,x1,x1,y1,y2,class_name`"
 
 if __name__ == '__main__':
     data_list_wild = open(config.SOURCE_DATA_LIST, 'r', encoding='utf-8')

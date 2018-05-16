@@ -29,7 +29,7 @@ def get_data(input_path):
 
         for line in f:
             line_split = line.strip().split(',')
-            (filename, x1, y1, x2, y2, class_name) = line_split
+            (filename, x1, y1, x2, y2, class_name, source, set_name) = line_split
 
             if class_name not in classes_count:
                 classes_list[class_name] = []
@@ -55,14 +55,18 @@ def get_data(input_path):
                 all_imgs[filename]['width'] = cols
                 all_imgs[filename]['height'] = rows
                 all_imgs[filename]['bboxes'] = []
+                if set_name == 'train':
+                    all_imgs[filename]['imageset'] = 'trainval'
+                elif set_name == 'test':
+                    all_imgs[filename]['imageset'] = 'test'
 
-            # if np.random.randint(0,6) > 0:
-            # 	all_imgs[filename]['imageset'] = 'trainval'
-            # else:
-            # 	all_imgs[filename]['imageset'] = 'test'
+                # if np.random.randint(0,6) > 0:
+                # 	all_imgs[filename]['imageset'] = 'trainval'
+                # else:
+                # 	all_imgs[filename]['imageset'] = 'test'
 
             all_imgs[filename]['bboxes'].append(
-                {'class': class_name, 'x1': int(x1), 'x2': int(x2), 'y1': int(y1), 'y2': int(y2)})
+                {'class': class_name, 'x1': int(float(x1)), 'x2': int(float(x2)), 'y1': int(float(y1)), 'y2': int(float(y2))})
             classes_list[class_name].append(all_imgs[filename])
 
     all_data = []
@@ -77,24 +81,9 @@ def get_data(input_path):
             class_mapping['bg'] = len(class_mapping) - 1
             class_mapping[key_to_switch] = val_to_switch
 
-    print(classes_list)
-    for class_name in classes_list:
-        data_list = classes_list[class_name]
-        random.shuffle(data_list)
-        class_data_count = len(data_list)
-        test_count = ceil(0.133*class_data_count)
-        for i in range(class_data_count):
-            if i < test_count:
-                all_imgs[data_list[i]['filepath']]['imageset'] = 'test'
-                test_train_cut[data_list[i]['filepath'].split('\\')[-1]] = 'test'
-            else:
-                all_imgs[data_list[i]['filepath']]['imageset'] = 'trainval'
-                test_train_cut[data_list[i]['filepath'].split('\\')[-1]] = 'trainval'
-        print("%s: %d for training, %d for testing." % (class_name, class_data_count - test_count, test_count))
-
 
     return all_data, classes_count, class_mapping
 
 if __name__ == '__main__':
-    get_data("./source/data_list_compressed.txt")
+    get_data("./source/data_list_mixed.txt")
     test_train_cut_output.write(json.dumps(test_train_cut, ensure_ascii=False, indent=2))
