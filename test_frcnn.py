@@ -49,20 +49,23 @@ C.rot_90 = False
 
 img_path = options.test_path
 
-def get_filename_to_groundtruth(file_addr):
-    f = open(file_addr, 'r', encoding='utf-8')
-    dict = {}
+def get_mixed_annotation_info(file_addr):
+    file_annotation = {}
+    f = open(file_addr, "r+", encoding="utf-8")
     for line in f:
-        (file_path, _, _, _, _,  class_name) = line.strip().split(',')
-        file_name = file_path.split('/')[-1]
-        if file_name in dict:
-            assert dict[file_name] == class_name
-        dict[file_name] = class_name
-    return dict
-
-def get_test_or_train(source_addr):
-    import json
-    return json.loads(open(source_addr, "r+", encoding="utf-8").read())
+        line_split = line.strip().split(',')
+        (filename, x1, y1, x2, y2, class_name, source, type) = line_split
+        filename = filename.split('\\')[-1]
+        if filename not in file_annotation:
+            file_annotation[filename] = {
+                "class": class_name,
+                "source": source,
+                "type": type,
+                "box_list": []
+            }
+        box_list = file_annotation[filename]["box_list"]
+        box_list.append((x1, y1, x2, y2))
+    return file_annotation
 
 def judge_correctness(all_dets, groundtruth):
     if len(all_dets) > 0:
@@ -158,6 +161,7 @@ model_classifier_only = Model([feature_map_input, roi_input], classifier)
 
 model_classifier = Model([feature_map_input, roi_input], classifier)
 
+C.model_path = "weight_archieves/model_frcnn-1.hdf5"
 print('Loading weights from {}'.format(C.model_path))
 model_rpn.load_weights(C.model_path, by_name=True)
 model_classifier.load_weights(C.model_path, by_name=True)
@@ -180,8 +184,8 @@ random.seed(0)
 img_list = os.listdir(img_path)
 random.shuffle(img_list)
 
-fname_class_map = get_filename_to_groundtruth("source/data_list_compressed_linux.txt")
-fname_train_test_map = get_test_or_train("source/test_train_cut.json")
+annotation = get_mixed_annotation_info("source/data_list_mixed.txt")
+print(annotation)
 
 total_judged = 0
 cate_correct = 0
@@ -190,12 +194,17 @@ bad_cases = []
 for idx, img_name in enumerate(img_list):
     if not img_name.lower().endswith(('.bmp', '.jpeg', '.jpg', '.png', '.tif', '.tiff')):
         continue
+    if img_name not in annotation:
+        continue
+    if img_name.startswith("A"):
+        continue
     print(img_name)
-    cate_groundtruth = fname_class_map[img_name]
+    cate_groundtruth = annotation[img_name]["class"]
     print(cate_groundtruth)
-    train_or_test = fname_train_test_map[img_name]
+    train_or_test = annotation[img_name]["type"]
+    source = annotation[img_name]["source"]
 
-    if train_or_test == "trainval":
+    if train_or_test == "train" or source != "original":
         continue
     st = time.time()
     filepath = os.path.join(img_path, img_name)
@@ -300,7 +309,7 @@ for idx, img_name in enumerate(img_list):
         cate_correct += 1
     else:
         bad_cases.append(img_name)
-    cv2.imshow('img', img)
+    #cv2.imshow('img', img)
     cv2.waitKey(0)
     print("total judged: %d, correct on category: %d" % (total_judged, cate_correct))
 # cv2.imwrite('./results_imgs/{}.png'.format(idx),img)

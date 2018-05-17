@@ -15,6 +15,8 @@ def get_data(input_path):
 
     classes_list = {}
 
+    class_name_list = []
+
     class_mapping = {}
 
     visualise = True
@@ -42,7 +44,7 @@ def get_data(input_path):
                     print(
                         'Found class name with special name bg. Will be treated as a background region (this is usually for hard negative mining).')
                     found_bg = True
-                class_mapping[class_name] = len(class_mapping)
+                class_name_list.append(class_name)
 
             if filename not in all_imgs:
                 all_imgs[filename] = {}
@@ -74,12 +76,12 @@ def get_data(input_path):
         all_data.append(all_imgs[key])
 
     # make sure the bg class is last in the list
+    class_name_list.sort()
+    for idx, class_name in class_name_list:
+        class_mapping[class_name] = idx
+
     if found_bg:
-        if class_mapping['bg'] != len(class_mapping) - 1:
-            key_to_switch = [key for key in class_mapping.keys() if class_mapping[key] == len(class_mapping) - 1][0]
-            val_to_switch = class_mapping['bg']
-            class_mapping['bg'] = len(class_mapping) - 1
-            class_mapping[key_to_switch] = val_to_switch
+        class_mapping['bg'] = len(class_mapping)
 
 
     return all_data, classes_count, class_mapping

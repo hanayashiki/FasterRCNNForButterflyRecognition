@@ -9,15 +9,21 @@ total_dict = {**original_dict, **augmented_dict}
 
 class_dict = {}
 
+def is_mode(file_name):
+    return utils.get_source_type(total_dict[file_name]) == "mode"
+
+def is_wild(file_name):
+    return utils.get_source_type(total_dict[file_name]) == "wild"
+
 def is_original(file_name):
-    return utils.get_source_type(total_dict[file_name]) == "original"
+    return is_mode(file_name) or is_wild(file_name)
 
 def is_augmented(file_name):
     return utils.get_source_type(total_dict[file_name]) == "augmented"
 
 for image_key in total_dict:
     image_value = total_dict[image_key]
-    class_name = image_value[0][5]
+    class_name = image_value["box_list"][0][5]
     if class_name not in class_dict:
         class_dict[class_name] = []
     class_dict[class_name].append(image_key)
@@ -89,7 +95,7 @@ output_linux = open(config.LINUX_MIXED_DATA_LIST, "w", encoding="utf-8")
 def print_from_list(data_list, type):
     for class_name in data_list:
         for file_name in data_list[class_name]:
-            file_annotation = total_dict[file_name]
+            file_annotation = total_dict[file_name]["box_list"]
             for tuple in file_annotation:
                 info_list = [str(x) for x in tuple]
                 info_list[0] = os.path.join(config.LINUX_BASE_WILD_IMAGES_COMPRESSED, file_name)
