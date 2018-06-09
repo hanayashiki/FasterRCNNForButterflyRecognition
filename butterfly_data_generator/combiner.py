@@ -46,8 +46,8 @@ print("augmented_dict: %d" % len(augmented_dict))
 test_list = {}
 train_list = {}
 
-test_per_kind = 3
-train_per_kind = 21
+test_per_kind = 4
+train_per_kind = 40
 
 test_set_count = 0
 train_set_count = 0
@@ -57,7 +57,8 @@ for class_name in class_dict:
     test_count = 0
     train_count = 0
     file_list = class_dict[class_name]
-    original_set = set([file_name for file_name in file_list if is_original(file_name)])
+    wild_set = set([file_name for file_name in file_list if is_wild(file_name)])
+    mode_set = set([file_name for file_name in file_list if is_mode(file_name)])
     augmented_set = set([file_name for file_name in file_list if is_augmented(file_name)])
     # original first, then augment
     if class_name not in test_list:
@@ -66,20 +67,29 @@ for class_name in class_dict:
         train_list[class_name] = []
     for file_name in file_list:
         if test_count < test_per_kind:
-            if len(original_set) > 1:
-                test_list[class_name].append(original_set.pop())
+            if len(wild_set) > 5:
+                test_list[class_name].append(wild_set.pop())
+            elif len(mode_set) > 1:
+                test_list[class_name].append(mode_set.pop())
             else:
                 test_list[class_name].append(augmented_set.pop())
             test_count += 1
             test_set_count += 1
         elif train_count < train_per_kind:
-            if len(original_set) > 0:
+            if len(wild_set) > 0:
                 original_train_set_count += 1
-                train_list[class_name].append(original_set.pop())
+                train_list[class_name].append(wild_set.pop())
+            elif len(mode_set) > 0:
+                original_train_set_count += 1
+                train_list[class_name].append(mode_set.pop())
             elif len(augmented_set) > 0:
                 train_list[class_name].append(augmented_set.pop())
             train_count += 1
             train_set_count += 1
+    for file_name in wild_set:
+        original_train_set_count += 1
+        train_count += 1
+        train_list[class_name].append(file_name)
 
 print(test_list)
 print("#test_set: %d" % test_set_count)

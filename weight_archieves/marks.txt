@@ -14,8 +14,8 @@ model-frcnn-1.hdf5
     Total loss decreased from 0.07107232488975948 to 0.06884039636583587, saving weights
     Epoch 64/200000
 
-
-
+model-frcnn-2.hdf5
+加入了增强测试集，测试集蝴蝶比较模糊，而且野外图占比比较小，训练结果更烂
     Mean number of bounding boxes from RPN overlapping ground truth boxes: 7.420970266040689
     Classifier accuracy for bounding boxes from RPN: 0.9803125
     Loss RPN classifier: 0.008521681962931118

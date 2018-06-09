@@ -309,7 +309,7 @@ for idx, img_name in enumerate(img_list):
         cate_correct += 1
     else:
         bad_cases.append(img_name)
-    #cv2.imshow('img', img)
+    cv2.imshow('img', img)
     cv2.waitKey(0)
     print("total judged: %d, correct on category: %d" % (total_judged, cate_correct))
 # cv2.imwrite('./results_imgs/{}.png'.format(idx),img)
