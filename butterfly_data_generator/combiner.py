@@ -109,7 +109,7 @@ def print_from_list(data_list, type):
             for tuple in file_annotation:
                 info_list = [str(x) for x in tuple]
                 info_list[0] = os.path.join(config.LINUX_BASE_WILD_IMAGES_COMPRESSED, file_name)
-                output_linux.write(','.join(info_list + [type]) + '\n')
+                output_linux.write((','.join(info_list + [type]) + '\n').replace('\\', '/'))
                 info_list[0] = os.path.join(config.BASE_WILD_IMAGES_COMPRESSED, file_name)
                 output_windows.write(','.join(info_list + [type]) + '\n')
 
