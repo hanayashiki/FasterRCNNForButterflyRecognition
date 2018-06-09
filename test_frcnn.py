@@ -161,7 +161,7 @@ model_classifier_only = Model([feature_map_input, roi_input], classifier)
 
 model_classifier = Model([feature_map_input, roi_input], classifier)
 
-C.model_path = "weight_archieves/model_frcnn-1.hdf5"
+C.model_path = "model_frcnn.hdf5"
 print('Loading weights from {}'.format(C.model_path))
 model_rpn.load_weights(C.model_path, by_name=True)
 model_classifier.load_weights(C.model_path, by_name=True)
@@ -309,8 +309,10 @@ for idx, img_name in enumerate(img_list):
         cate_correct += 1
     else:
         bad_cases.append(img_name)
-    cv2.imshow('img', img)
-    cv2.waitKey(0)
+    
+#    cv2.imshow('img', img)
+        
+#    cv2.waitKey(0)
     print("total judged: %d, correct on category: %d" % (total_judged, cate_correct))
 # cv2.imwrite('./results_imgs/{}.png'.format(idx),img)
 
