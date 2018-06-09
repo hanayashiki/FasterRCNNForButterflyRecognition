@@ -77,7 +77,7 @@ def get_data(input_path):
 
     # make sure the bg class is last in the list
     class_name_list.sort()
-    for idx, class_name in class_name_list:
+    for idx, class_name in enumerate(class_name_list):
         class_mapping[class_name] = idx
 
     if found_bg:
