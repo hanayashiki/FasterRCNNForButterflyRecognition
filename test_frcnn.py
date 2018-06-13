@@ -13,6 +13,8 @@ from keras.models import Model
 from keras_frcnn import roi_helpers
 from butterfly_data_generator import config as butterfly_config
 
+import progressbar
+
 sys.setrecursionlimit(40000)
 
 parser = OptionParser()
@@ -26,6 +28,9 @@ parser.add_option("--config_filename", dest="config_filename", help=
                   default="config.pickle")
 parser.add_option("--network", dest="network", help="Base network to use. Supports vgg or resnet50.",
                   default='resnet50')
+parser.add_option("-r", "--release",
+                  dest="release", default=True,
+                  help="don't print status messages to stdout")
 
 (options, args) = parser.parse_args()
 
@@ -127,7 +132,8 @@ if 'bg' not in class_mapping:
     class_mapping['bg'] = len(class_mapping)
 
 class_mapping = {v: k for k, v in class_mapping.items()}
-print(class_mapping)
+if not options.release:
+    print(class_mapping)
 class_to_color = {class_mapping[v]: np.random.randint(0, 255, 3) for v in class_mapping}
 C.num_rois = int(options.num_rois)
 
@@ -161,8 +167,9 @@ model_classifier_only = Model([feature_map_input, roi_input], classifier)
 
 model_classifier = Model([feature_map_input, roi_input], classifier)
 
-C.model_path = "model_frcnn.hdf5"
-print('Loading weights from {}'.format(C.model_path))
+C.model_path = "weight_archieves/model_frcnn-1.hdf5"
+if not options.release:
+    print('Loading weights from {}'.format(C.model_path))
 model_rpn.load_weights(C.model_path, by_name=True)
 model_classifier.load_weights(C.model_path, by_name=True)
 model_classifier_only.load_weights(C.model_path, by_name=True)
@@ -182,30 +189,41 @@ visualise = True
 import random
 random.seed(0)
 img_list = os.listdir(img_path)
-random.shuffle(img_list)
+img_list.sort()
 
 annotation = get_mixed_annotation_info("source/data_list_mixed.txt")
-print(annotation)
+if not options.release:
+    print(options.release)
+    print(annotation)
 
 total_judged = 0
 cate_correct = 0
 bad_cases = []
 
+import release
+
+release_output = release.Release()
+
+progress_bar = progressbar.ProgressBar(total=len(img_list))
+
 for idx, img_name in enumerate(img_list):
+    progress_bar.move()
+    progress_bar.log()
     if not img_name.lower().endswith(('.bmp', '.jpeg', '.jpg', '.png', '.tif', '.tiff')):
         continue
-    if img_name not in annotation:
-        continue
-    if img_name.startswith("A"):
-        continue
-    print(img_name)
-    cate_groundtruth = annotation[img_name]["class"]
-    print(cate_groundtruth)
-    train_or_test = annotation[img_name]["type"]
-    source = annotation[img_name]["source"]
-
-    if train_or_test == "train" or source != "original":
-        continue
+    if not options.release:
+        if img_name not in annotation:
+            continue
+        if img_name.startswith("A"):
+            continue
+    # print(img_name)
+    if not options.release:
+        cate_groundtruth = annotation[img_name]["class"]
+    # print(cate_groundtruth)
+        train_or_test = annotation[img_name]["type"]
+        source = annotation[img_name]["source"]
+        if train_or_test == "train" or source != "original":
+            continue
     st = time.time()
     filepath = os.path.join(img_path, img_name)
 
@@ -228,7 +246,6 @@ for idx, img_name in enumerate(img_list):
     # convert from (x1,y1,x2,y2) to (x,y,w,h)
     R[:, 2] -= R[:, 0]
     R[:, 3] -= R[:, 1]
-    print(R.shape)
 
     # apply the spatial pyramid pooling to the proposed regions
     bboxes = {}
@@ -287,35 +304,47 @@ for idx, img_name in enumerate(img_list):
 
             (real_x1, real_y1, real_x2, real_y2) = get_real_coordinates(ratio, x1, y1, x2, y2)
 
-            cv2.rectangle(img, (real_x1, real_y1), (real_x2, real_y2),
-                          (int(class_to_color[key][0]), int(class_to_color[key][1]), int(class_to_color[key][2])), 2)
+            # cv2.rectangle(img, (real_x1, real_y1), (real_x2, real_y2),
+            #               (int(class_to_color[key][0]), int(class_to_color[key][1]), int(class_to_color[key][2])), 2)
+            #
+            # textLabel = '{}'.format(int(100 * new_probs[jk]))
+            all_dets.append((key, 100 * new_probs[jk], (real_x1, real_y1, real_x2, real_y2)))
 
-            textLabel = '{}'.format(int(100 * new_probs[jk]))
-            all_dets.append((key, 100 * new_probs[jk]))
+            # (retval, baseLine) = cv2.getTextSize(textLabel, cv2.FONT_HERSHEY_COMPLEX, 1, 1)
+            # textOrg = (real_x1, real_y1 - 0)
+            #
+            # cv2.rectangle(img, (textOrg[0] - 5, textOrg[1] + baseLine - 5),
+            #               (textOrg[0] + retval[0] + 5, textOrg[1] - retval[1] - 5), (0, 0, 0), 2)
+            # cv2.rectangle(img, (textOrg[0] - 5, textOrg[1] + baseLine - 5),
+            #               (textOrg[0] + retval[0] + 5, textOrg[1] - retval[1] - 5), (255, 255, 255), -1)
+            # cv2.putText(img, textLabel, textOrg, cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 0), 1)
 
-            (retval, baseLine) = cv2.getTextSize(textLabel, cv2.FONT_HERSHEY_COMPLEX, 1, 1)
-            textOrg = (real_x1, real_y1 - 0)
+        if not options.release:
+            print('Elapsed time = {}'.format(time.time() - st))
+    if not options.release:
+        print(all_dets)
+        total_judged += 1
+        if judge_correctness(all_dets, cate_groundtruth):
+            cate_correct += 1
+        else:
+            bad_cases.append(img_name)
 
-            cv2.rectangle(img, (textOrg[0] - 5, textOrg[1] + baseLine - 5),
-                          (textOrg[0] + retval[0] + 5, textOrg[1] - retval[1] - 5), (0, 0, 0), 2)
-            cv2.rectangle(img, (textOrg[0] - 5, textOrg[1] + baseLine - 5),
-                          (textOrg[0] + retval[0] + 5, textOrg[1] - retval[1] - 5), (255, 255, 255), -1)
-            cv2.putText(img, textLabel, textOrg, cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 0), 1)
-
-    print('Elapsed time = {}'.format(time.time() - st))
-    print(all_dets)
-    total_judged += 1
-    if judge_correctness(all_dets, cate_groundtruth):
-        cate_correct += 1
+    if len(all_dets) > 0:
+        output_box = max(all_dets, key=lambda x : x[1])
+        release_output.write_position(*output_box[2])
+        release_output.write_category(output_box[0])
     else:
-        bad_cases.append(img_name)
+        release_output.write_position()
+        release_output.write_category()
     
 #    cv2.imshow('img', img)
         
 #    cv2.waitKey(0)
-    print("total judged: %d, correct on category: %d" % (total_judged, cate_correct))
+    if not options.release:
+        print("total judged: %d, correct on category: %d" % (total_judged, cate_correct))
 # cv2.imwrite('./results_imgs/{}.png'.format(idx),img)
+if not options.release:
+    print("total judged: %d, correct on category: %d" % (total_judged, cate_correct))
 
-print("total judged: %d, correct on category: %d" % (total_judged, cate_correct))
 
 
