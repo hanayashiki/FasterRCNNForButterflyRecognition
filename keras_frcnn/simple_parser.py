@@ -45,6 +45,7 @@ def get_data(input_path):
                         'Found class name with special name bg. Will be treated as a background region (this is usually for hard negative mining).')
                     found_bg = True
                 class_name_list.append(class_name)
+                class_mapping[class_name] = 0
 
             if filename not in all_imgs:
                 all_imgs[filename] = {}
