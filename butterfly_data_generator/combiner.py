@@ -67,7 +67,7 @@ for class_name in class_dict:
         train_list[class_name] = []
     for file_name in file_list:
         if test_count < test_per_kind:
-            if len(wild_set) > 5:
+            if len(wild_set) > 7:
                 test_list[class_name].append(wild_set.pop())
             elif len(mode_set) > 1:
                 test_list[class_name].append(mode_set.pop())

@@ -3,6 +3,8 @@ model-frcnn-1.hdf5
     ds1: total judged: 199, correct on category: 192
     ds2: total judged: 276, correct on category: 244 // both mode and wild
          total judged: 135, correct on category: 129 // only the wild
+    ds3:
+         total judged: 112, correct on category: 111 // test set for model-frcnn-3.hd5f, only original wild unseen
 
     Mean number of bounding boxes from RPN overlapping ground truth boxes: 10.207
     Classifier accuracy for bounding boxes from RPN: 0.987
@@ -25,3 +27,14 @@ model-frcnn-2.hdf5
     Elapsed time: 961.6714890003204
 
     0.07555015180625319
+
+model-frcnn-3.hdf5
+    total judged: 112, correct on category: 0
+    Mean number of bounding boxes from RPN overlapping ground truth boxes: 7.3976083707025415
+    Classifier accuracy for bounding boxes from RPN: 0.9771875
+    Loss RPN classifier: 0.013641957284733188
+    Loss RPN regression: 0.012147159910808569
+    Loss Detector classifier: 0.057811921768530734
+    Loss Detector regression: 0.01782930111279711
+    Elapsed time: 912.1821274757385
+    Total loss decreased from 0.10329736599631564 to 0.1014303400768696, saving weights

@@ -8,8 +8,8 @@ def get_bound_boxes(root: minidom.Element):
     assert len(bound_box) == 1
     bound_box: minidom.Element = bound_box[0]
     return [str(bound_box.getElementsByTagName(name="xmin")[0].childNodes[0].data),
-            str(bound_box.getElementsByTagName(name="xmax")[0].childNodes[0].data),
             str(bound_box.getElementsByTagName(name="ymin")[0].childNodes[0].data),
+            str(bound_box.getElementsByTagName(name="xmax")[0].childNodes[0].data),
             str(bound_box.getElementsByTagName(name="ymax")[0].childNodes[0].data)]
 
 

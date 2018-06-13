@@ -64,7 +64,7 @@ def get_mixed_annotation_info(file_addr):
                 "box_list": []
             }
         box_list = file_annotation[filename]["box_list"]
-        box_list.append((x1, y1, x2, y2))
+        box_list.append((float(x1), float(x2), float(y1), float(y2)))
     return file_annotation
 
 def judge_correctness(all_dets, groundtruth):
@@ -191,6 +191,8 @@ total_judged = 0
 cate_correct = 0
 bad_cases = []
 
+iou_total = 0
+
 for idx, img_name in enumerate(img_list):
     if not img_name.lower().endswith(('.bmp', '.jpeg', '.jpg', '.png', '.tif', '.tiff')):
         continue
@@ -201,10 +203,12 @@ for idx, img_name in enumerate(img_list):
     print(img_name)
     cate_groundtruth = annotation[img_name]["class"]
     print(cate_groundtruth)
+    boxlist = annotation[img_name]["box_list"]
+    print(boxlist)
     train_or_test = annotation[img_name]["type"]
     source = annotation[img_name]["source"]
 
-    if train_or_test == "train" or source != "original":
+    if train_or_test != "test" or source != "original":
         continue
     st = time.time()
     filepath = os.path.join(img_path, img_name)
@@ -223,7 +227,7 @@ for idx, img_name in enumerate(img_list):
     #     for j in range(0, y):
     #         print(Y1[0, i, j, :])
 
-    R = roi_helpers.rpn_to_roi(Y1, Y2, C, K.image_dim_ordering(), overlap_thresh=0.7)
+    R = roi_helpers.rpn_to_roi(Y1, Y2, C, K.image_dim_ordering(), overlap_thresh=0.1)
 
     # convert from (x1,y1,x2,y2) to (x,y,w,h)
     R[:, 2] -= R[:, 0]
@@ -287,19 +291,25 @@ for idx, img_name in enumerate(img_list):
 
             (real_x1, real_y1, real_x2, real_y2) = get_real_coordinates(ratio, x1, y1, x2, y2)
 
+            if (len(boxlist) > 0):
+                true_box = boxlist[0]
+                cv2.rectangle(img, (int(true_box[0]), int(true_box[2])), (int(true_box[1]), int(true_box[3])),
+                              (0, 0, 0), 2)
             cv2.rectangle(img, (real_x1, real_y1), (real_x2, real_y2),
                           (int(class_to_color[key][0]), int(class_to_color[key][1]), int(class_to_color[key][2])), 2)
 
+
+
             textLabel = '{}'.format(int(100 * new_probs[jk]))
-            all_dets.append((key, 100 * new_probs[jk]))
+            all_dets.append((key, 100 * new_probs[jk], (real_x1, real_x2, real_y1, real_y2)))
 
             (retval, baseLine) = cv2.getTextSize(textLabel, cv2.FONT_HERSHEY_COMPLEX, 1, 1)
             textOrg = (real_x1, real_y1 - 0)
 
-            cv2.rectangle(img, (textOrg[0] - 5, textOrg[1] + baseLine - 5),
-                          (textOrg[0] + retval[0] + 5, textOrg[1] - retval[1] - 5), (0, 0, 0), 2)
-            cv2.rectangle(img, (textOrg[0] - 5, textOrg[1] + baseLine - 5),
-                          (textOrg[0] + retval[0] + 5, textOrg[1] - retval[1] - 5), (255, 255, 255), -1)
+            # cv2.rectangle(img, (textOrg[0] - 5, textOrg[1] + baseLine - 5),
+            #               (textOrg[0] + retval[0] + 5, textOrg[1] - retval[1] - 5), (255, 255, 255), -1)
+            # cv2.rectangle(img, (textOrg[0] - 5, textOrg[1] + baseLine - 5),
+            #               (textOrg[0] + retval[0] + 5, textOrg[1] - retval[1] - 5), (0, 0, 0), 2)
             cv2.putText(img, textLabel, textOrg, cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 0), 1)
 
     print('Elapsed time = {}'.format(time.time() - st))
@@ -309,9 +319,24 @@ for idx, img_name in enumerate(img_list):
         cate_correct += 1
     else:
         bad_cases.append(img_name)
-    cv2.imshow('img', img)
-    cv2.waitKey(0)
-    print("total judged: %d, correct on category: %d" % (total_judged, cate_correct))
+
+    if len(boxlist) == 1:
+        true_box = boxlist[0]
+        if len(all_dets) == 0:
+            iou_total += 0
+        else:
+            import calc_iou
+            iou = calc_iou.get_IoU(true_box, all_dets[0][2])
+            iou_total += iou
+            print(true_box, all_dets[0][2])
+            print("iou: %f" % iou)
+    else:
+        iou_total += 1
+
+
+    # cv2.imshow('img', img)
+    # cv2.waitKey(0)
+    print("total judged: %d, correct on category: %d, average_iou: %f" % (total_judged, cate_correct, iou_total / total_judged))
 # cv2.imwrite('./results_imgs/{}.png'.format(idx),img)
 
 print("total judged: %d, correct on category: %d" % (total_judged, cate_correct))
