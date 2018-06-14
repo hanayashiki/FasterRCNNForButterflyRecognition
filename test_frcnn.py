@@ -161,7 +161,7 @@ model_classifier_only = Model([feature_map_input, roi_input], classifier)
 
 model_classifier = Model([feature_map_input, roi_input], classifier)
 
-C.model_path = "weight_archieves/model_frcnn-1.hdf5"
+C.model_path = "model_frcnn.hdf5"
 print('Loading weights from {}'.format(C.model_path))
 model_rpn.load_weights(C.model_path, by_name=True)
 model_classifier.load_weights(C.model_path, by_name=True)
@@ -214,6 +214,10 @@ for idx, img_name in enumerate(img_list):
     filepath = os.path.join(img_path, img_name)
 
     img = cv2.imdecode(np.fromfile(filepath, dtype=np.uint8), -1)
+    if (len(boxlist) > 0):
+        true_box = boxlist[0]
+        cv2.rectangle(img, (int(true_box[0]), int(true_box[2])), (int(true_box[1]), int(true_box[3])),
+                      (0, 0, 0), 2)
 
     X, ratio = format_img(img, C)
 
@@ -286,15 +290,12 @@ for idx, img_name in enumerate(img_list):
         bbox = np.array(bboxes[key])
 
         new_boxes, new_probs = roi_helpers.non_max_suppression_fast(bbox, np.array(probs[key]), overlap_thresh=0.5)
+
         for jk in range(new_boxes.shape[0]):
             (x1, y1, x2, y2) = new_boxes[jk, :]
 
             (real_x1, real_y1, real_x2, real_y2) = get_real_coordinates(ratio, x1, y1, x2, y2)
 
-            if (len(boxlist) > 0):
-                true_box = boxlist[0]
-                cv2.rectangle(img, (int(true_box[0]), int(true_box[2])), (int(true_box[1]), int(true_box[3])),
-                              (0, 0, 0), 2)
             cv2.rectangle(img, (real_x1, real_y1), (real_x2, real_y2),
                           (int(class_to_color[key][0]), int(class_to_color[key][1]), int(class_to_color[key][2])), 2)
 
@@ -334,8 +335,8 @@ for idx, img_name in enumerate(img_list):
         iou_total += 1
 
 
-    # cv2.imshow('img', img)
-    # cv2.waitKey(0)
+    cv2.imshow('img', img)
+    cv2.waitKey(0)
     print("total judged: %d, correct on category: %d, average_iou: %f" % (total_judged, cate_correct, iou_total / total_judged))
 # cv2.imwrite('./results_imgs/{}.png'.format(idx),img)
 
