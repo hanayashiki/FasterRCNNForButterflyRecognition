@@ -337,9 +337,9 @@ for idx, img_name in enumerate(img_list):
         release_output.write_position()
         release_output.write_category()
     
-#    cv2.imshow('img', img)
-        
-#    cv2.waitKey(0)
+    # cv2.imshow('img', img)
+    #
+    # cv2.waitKey(0)
     if not options.release:
         print("total judged: %d, correct on category: %d" % (total_judged, cate_correct))
 # cv2.imwrite('./results_imgs/{}.png'.format(idx),img)
